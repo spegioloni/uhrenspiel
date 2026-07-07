@@ -99,39 +99,40 @@
             cursor: pointer;
         }
 
-        /* Die analoge Uhr */
+        /* Die analoge Uhr - Präzise Fixierung von Gehäuse und Ziffernblatt */
         .clock-container {
             position: relative;
             width: 260px;
             height: 260px;
-            background: var(--white);
+            background: var(--bluey-blue);
             border-radius: 50%;
-            border: 12px solid var(--bluey-blue);
-            box-shadow: 0 10px 0px rgba(0,0,0,0.1), inset 0 0 20px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 0px rgba(0,0,0,0.1);
             margin: 10px auto 25px auto;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
 
-        /* Kleine Ohren für den Bluey-Look */
+        /* Kleine Ohren für den Bluey-Look (Jetzt mit korrektem Winkel) */
         .clock-container::before, .clock-container::after {
             content: '';
             position: absolute;
-            top: -12px;
-            width: 40px;
-            height: 40px;
+            top: -10px;
+            width: 45px;
+            height: 45px;
             background: var(--bluey-blue);
-            border-radius: 10px 30px 0 0;
             z-index: -1;
         }
-        .clock-container::before { left: 40px; transform: rotate(-15px); }
-        .clock-container::after { right: 40px; transform: rotate(55deg); border-radius: 30px 10px 0 0; }
+        .clock-container::before { left: 35px; transform: rotate(-15deg); border-radius: 12px 35px 0 0; }
+        .clock-container::after { right: 35px; transform: rotate(15deg); border-radius: 35px 12px 0 0; }
 
+        /* Das weiße Ziffernblatt sitzt exakt zentriert im blauen Rahmen */
         .clock-face {
-            position: relative;
-            width: 100%;
-            height: 100%;
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            width: 236px;
+            height: 236px;
+            background: var(--white);
+            border-radius: 50%;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
         }
 
         .center-nut {
@@ -147,42 +148,38 @@
             border: 2px solid white;
         }
 
-        /* Zeiger */
+        /* Zeiger - Absolut zentriert über die CSS-Eigenschaft 'rotate' */
         .hand {
             position: absolute;
             bottom: 50%;
             left: 50%;
+            transform: translateX(-50%);
             transform-origin: bottom center;
             border-radius: 10px;
-            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: rotate 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .hour-hand {
             width: 8px;
             height: 60px;
             background-color: var(--bluey-dark);
-            margin-left: -4px;
             z-index: 5;
         }
 
         .minute-hand {
             width: 6px;
-            height: 90px;
+            height: 88px;
             background-color: var(--bingo-orange);
-            margin-left: -3px;
             z-index: 4;
         }
 
-        /* Zahlen auf der Uhr */
+        /* Zahlen auf der Uhr - Werden via JS exakt eingemittet */
         .number {
             position: absolute;
-            width: 30px;
-            height: 30px;
-            text-align: center;
-            line-height: 30px;
             font-weight: 600;
-            font-size: 1.3rem;
+            font-size: 1.4rem;
             color: #333;
+            user-select: none;
         }
 
         /* Antworten-Bereich */
@@ -211,7 +208,7 @@
             align-items: center;
         }
 
-        /* Mikro-Animationen bei Klick/Hover */
+        /* Mikro-Animationen bei Klick */
         .btn:active {
             transform: translateY(4px);
             box-shadow: 0 2px 0px #ccd1d9;
@@ -324,7 +321,7 @@
         <h1>🐾 Blueys Uhren-Schule</h1>
     </header>
 
-    <div class="status-bar style-bar" style="width: 100%; max-width: 400px;">
+    <div class="status-bar" style="width: 100%; max-width: 400px;">
         <div class="status-item">Punkte: <span id="score-display">0</span></div>
         <div class="status-item">Runde: <span id="round-display">1</span>/5</div>
     </div>
@@ -378,25 +375,32 @@
         const maxRounds = 5;
         let correctAnswerText = "";
 
-        // Uhrzahlen mathematisch exakt im Kreis platzieren
+        // Uhrzahlen mathematisch exakt aus der Ziffernblatt-Mitte platzieren
         function createClockNumbers() {
             const container = document.getElementById('numbers-container');
-            const radius = 105; // Abstand vom Zentrum in Pixeln
+            container.innerHTML = ""; // Container leeren
+            
+            const centerX = 118; // Exakte Mitte von 236px Breite
+            const centerY = 118; // Exakte Mitte von 236px Höhe
+            const radius = 92;   // Abstand der Zahlen zum Mittelpunkt
+
             for (let i = 1; i <= 12; i++) {
                 const angle = (i * 30) * (Math.PI / 180);
-                const x = 130 + radius * Math.sin(angle) - 15;
-                const y = 130 - radius * Math.cos(angle) - 15;
+                const x = centerX + radius * Math.sin(angle);
+                const y = centerY - radius * Math.cos(angle);
                 
                 const numDiv = document.createElement('div');
                 numDiv.className = 'number';
                 numDiv.style.left = `${x}px`;
                 numDiv.style.top = `${y}px`;
+                // transform: translate(-50%, -50%) sorgt für die perfekte Zentrierung der Zahl auf dem Punkt
+                numDiv.style.transform = 'translate(-50%, -50%)'; 
                 numDiv.innerText = i;
                 container.appendChild(numDiv);
             }
         }
 
-        // Generiert eine Uhrzeit basierend auf der Schwierigkeit (immer in 5er Schritten)
+        // Generiert eine Uhrzeit basierend auf der Schwierigkeit
         function generateTime() {
             const diff = parseInt(document.getElementById('difficulty').value);
             currentHour = Math.floor(Math.random() * 12) + 1; // 1 bis 12
@@ -409,19 +413,17 @@
                 const choices = [0, 15, 30, 45];
                 currentMinute = choices[Math.floor(Math.random() * choices.length)];
             } else {
-                // Alle 5er-Schritte (0, 5, 10, 15 ... 55)
                 currentMinute = Math.floor(Math.random() * 12) * 5;
             }
 
-            // Zeiger stellen
+            // Winkel berechnen
             const minDeg = currentMinute * 6;
-            // Der Stundenzeiger bewegt sich fließend mit den Minuten mit
             const hourDeg = (currentHour * 30) + (currentMinute * 0.5);
 
-            document.getElementById('minute-hand').style.transform = `rotate(${minDeg}deg)`;
-            document.getElementById('hour-hand').style.transform = `rotate(${hourDeg}deg)`;
+            // Zeiger exakt über CSS-rotate Eigenschaft drehen (verhindert Versatz)
+            document.getElementById('minute-hand').style.rotate = `${minDeg}deg`;
+            document.getElementById('hour-hand').style.rotate = `${hourDeg}deg`;
 
-            // Richtigen Text formatieren
             correctAnswerText = formatTime(currentHour, currentMinute);
             setupAnswers();
         }
@@ -430,14 +432,14 @@
             return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')} Uhr`;
         }
 
-        // Generiert 4 Antwortmöglichkeiten (1 richtige, 3 falsche)
+        // Generiert 4 Antwortmöglichkeiten
         function setupAnswers() {
             const buttons = document.querySelectorAll('#answers-box .btn');
             let options = [correctAnswerText];
 
             while(options.length < 4) {
                 let fHour = Math.floor(Math.random() * 12) + 1;
-                let fMinute = Math.floor(Math.random() * 12) * 5; // Immer in 5er-Schritten
+                let fMinute = Math.floor(Math.random() * 12) * 5;
                 let fTimeText = formatTime(fHour, fMinute);
 
                 if(!options.includes(fTimeText)) {
@@ -445,20 +447,17 @@
                 }
             }
 
-            // Optionen mischen (Misch-Algorithmus)
             options.sort(() => Math.random() - 0.5);
 
             buttons.forEach((btn, index) => {
                 btn.innerText = options[index];
-                btn.className = "btn"; // Reset Animations-Klassen
+                btn.className = "btn"; 
                 btn.disabled = false;
             });
         }
 
-        // Antwort prüfen mit Animationen
         function checkAnswer(selectedButton) {
             const buttons = document.querySelectorAll('#answers-box .btn');
-            // Deaktiviert alle Buttons sofort, damit man nicht mehrfach klickt
             buttons.forEach(b => b.disabled = true);
 
             if (selectedButton.innerText === correctAnswerText) {
@@ -467,13 +466,11 @@
                 document.getElementById('score-display').innerText = score;
             } else {
                 selectedButton.classList.add('wrong-animation');
-                // Richtigen Button grün aufleuchten lassen zur Hilfe
                 buttons.forEach(b => {
                     if(b.innerText === correctAnswerText) b.classList.add('correct-animation');
                 });
             }
 
-            // Nächste Runde nach kurzer Animationspause
             setTimeout(() => {
                 if (round < maxRounds) {
                     round++;
@@ -497,9 +494,7 @@
             let leaderboards = JSON.parse(localStorage.getItem('clockLeaderboard')) || [];
             leaderboards.push({name: name, score: score});
             
-            // Sortieren nach Highscore (höchste zuerst)
             leaderboards.sort((a,b) => b.score - a.score);
-            // Nur Top 5 behalten
             leaderboards = leaderboards.slice(0, 5);
 
             localStorage.setItem('clockLeaderboard', JSON.stringify(leaderboards));
@@ -534,10 +529,9 @@
             generateTime();
         }
 
-        // Start der App
+        // Initialisierung beim Start
         createClockNumbers();
         resetGame();
     </script>
 </body>
 </html>
-
