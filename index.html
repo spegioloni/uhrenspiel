@@ -99,7 +99,7 @@
             cursor: pointer;
         }
 
-        /* Die analoge Uhr - Präzise Fixierung von Gehäuse und Ziffernblatt */
+        /* Die analoge Uhr */
         .clock-container {
             position: relative;
             width: 260px;
@@ -110,7 +110,7 @@
             margin: 10px auto 25px auto;
         }
 
-        /* Kleine Ohren für den Bluey-Look (Jetzt mit korrektem Winkel) */
+        /* Bluey Ohren */
         .clock-container::before, .clock-container::after {
             content: '';
             position: absolute;
@@ -123,7 +123,7 @@
         .clock-container::before { left: 35px; transform: rotate(-15deg); border-radius: 12px 35px 0 0; }
         .clock-container::after { right: 35px; transform: rotate(15deg); border-radius: 35px 12px 0 0; }
 
-        /* Das weiße Ziffernblatt sitzt exakt zentriert im blauen Rahmen */
+        /* Das weiße Ziffernblatt */
         .clock-face {
             position: absolute;
             top: 12px;
@@ -135,6 +135,7 @@
             box-shadow: inset 0 0 20px rgba(0,0,0,0.05);
         }
 
+        /* FIX: Mittelpunkt komplett ohne Translate-Rundungsfehler zentriert */
         .center-nut {
             position: absolute;
             width: 16px;
@@ -143,39 +144,47 @@
             border-radius: 50%;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%);
+            margin-left: -8px;
+            margin-top: -8px;
             z-index: 10;
             border: 2px solid white;
         }
 
-        /* Zeiger - Absolut zentriert über die CSS-Eigenschaft 'rotate' */
+        /* FIX: Zeiger-Basis-Klasse nutzt jetzt feste Pixel-Margins für 100% exakte Zentrierung */
         .hand {
             position: absolute;
             bottom: 50%;
             left: 50%;
-            transform: translateX(-50%);
             transform-origin: bottom center;
             border-radius: 10px;
-            transition: rotate 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
+        /* 8px breit -> exakt 4px nach links versetzen für die perfekte Mitte */
         .hour-hand {
             width: 8px;
             height: 60px;
             background-color: var(--bluey-dark);
+            margin-left: -4px;
             z-index: 5;
         }
 
+        /* 6px breit -> exakt 3px nach links versetzen */
         .minute-hand {
             width: 6px;
             height: 88px;
             background-color: var(--bingo-orange);
+            margin-left: -3px;
             z-index: 4;
         }
 
-        /* Zahlen auf der Uhr - Werden via JS exakt eingemittet */
+        /* Zahlen auf der Uhr - Feste Größe für pixelgenaue JS-Zentrierung */
         .number {
             position: absolute;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
             font-weight: 600;
             font-size: 1.4rem;
             color: #333;
@@ -208,7 +217,6 @@
             align-items: center;
         }
 
-        /* Mikro-Animationen bei Klick */
         .btn:active {
             transform: translateY(4px);
             box-shadow: 0 2px 0px #ccd1d9;
@@ -375,14 +383,14 @@
         const maxRounds = 5;
         let correctAnswerText = "";
 
-        // Uhrzahlen mathematisch exakt aus der Ziffernblatt-Mitte platzieren
+        // Uhrzahlen mathematisch exakt platzieren ohne CSS-Transforms für maximale Stabilität
         function createClockNumbers() {
             const container = document.getElementById('numbers-container');
-            container.innerHTML = ""; // Container leeren
+            container.innerHTML = ""; 
             
-            const centerX = 118; // Exakte Mitte von 236px Breite
-            const centerY = 118; // Exakte Mitte von 236px Höhe
-            const radius = 92;   // Abstand der Zahlen zum Mittelpunkt
+            const centerX = 118; // Exakte mathematische Mitte von 236px
+            const centerY = 118; 
+            const radius = 92;   // Abstand zum Rand
 
             for (let i = 1; i <= 12; i++) {
                 const angle = (i * 30) * (Math.PI / 180);
@@ -391,10 +399,9 @@
                 
                 const numDiv = document.createElement('div');
                 numDiv.className = 'number';
-                numDiv.style.left = `${x}px`;
-                numDiv.style.top = `${y}px`;
-                // transform: translate(-50%, -50%) sorgt für die perfekte Zentrierung der Zahl auf dem Punkt
-                numDiv.style.transform = 'translate(-50%, -50%)'; 
+                // FIX: Zieht die Hälfte der Elementbreite/höhe (15px) direkt ab. Verhindert Subpixel-Verschiebungen.
+                numDiv.style.left = `${x - 15}px`;
+                numDiv.style.top = `${y - 15}px`;
                 numDiv.innerText = i;
                 container.appendChild(numDiv);
             }
@@ -403,7 +410,7 @@
         // Generiert eine Uhrzeit basierend auf der Schwierigkeit
         function generateTime() {
             const diff = parseInt(document.getElementById('difficulty').value);
-            currentHour = Math.floor(Math.random() * 12) + 1; // 1 bis 12
+            currentHour = Math.floor(Math.random() * 12) + 1; 
 
             if (diff === 1) {
                 currentMinute = 0;
@@ -420,9 +427,9 @@
             const minDeg = currentMinute * 6;
             const hourDeg = (currentHour * 30) + (currentMinute * 0.5);
 
-            // Zeiger exakt über CSS-rotate Eigenschaft drehen (verhindert Versatz)
-            document.getElementById('minute-hand').style.rotate = `${minDeg}deg`;
-            document.getElementById('hour-hand').style.rotate = `${hourDeg}deg`;
+            // FIX: Nutzt jetzt den klassischen, plattformübergreifend stabilen Transform-Befehl
+            document.getElementById('minute-hand').style.transform = `rotate(${minDeg}deg)`;
+            document.getElementById('hour-hand').style.transform = `rotate(${hourDeg}deg)`;
 
             correctAnswerText = formatTime(currentHour, currentMinute);
             setupAnswers();
@@ -529,7 +536,7 @@
             generateTime();
         }
 
-        // Initialisierung beim Start
+        // Start
         createClockNumbers();
         resetGame();
     </script>
