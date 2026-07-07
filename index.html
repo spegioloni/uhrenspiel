@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blueys Uhren-Schule 🐾</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bluey-blue: #4ca3dd;
+            --bluey-dark: #2c6a94;
+            --bingo-orange: #ff9f43;
+            --cream-bg: #f7f9fc;
+            --white: #ffffff;
+            --correct-green: #2ecc71;
+            --wrong-red: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Fredoka', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--cream-bg);
+            background-image: radial-gradient(#e0ebf5 2px, transparent 2px);
+            background-size: 20px 20px;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 15px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        h1 {
+            color: var(--bluey-dark);
+            font-size: 1.8rem;
+            text-shadow: 2px 2px 0px #fff;
+            margin-bottom: 5px;
+        }
+
+        /* Status-Leiste */
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            background: var(--white);
+            padding: 10px 15px;
+            border-radius: 20px;
+            box-shadow: 0 6px 0px rgba(0,0,0,0.05);
+            margin-bottom: 15px;
+            border: 3px solid var(--bluey-blue);
+        }
+
+        .status-item {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--bluey-dark);
+        }
+
+        /* Einstellungen / Schwierigkeit */
+        .difficulty-container {
+            background: var(--white);
+            padding: 10px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            border: 2px dashed var(--bingo-orange);
+        }
+
+        label {
+            font-weight: 600;
+            color: var(--bluey-dark);
+            margin-right: 8px;
+        }
+
+        select {
+            font-family: 'Fredoka', sans-serif;
+            padding: 5px 10px;
+            border-radius: 10px;
+            border: 2px solid var(--bluey-blue);
+            background: white;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--bluey-dark);
+            outline: none;
+            cursor: pointer;
+        }
+
+        /* Die analoge Uhr */
+        .clock-container {
+            position: relative;
+            width: 260px;
+            height: 260px;
+            background: var(--white);
+            border-radius: 50%;
+            border: 12px solid var(--bluey-blue);
+            box-shadow: 0 10px 0px rgba(0,0,0,0.1), inset 0 0 20px rgba(0,0,0,0.05);
+            margin: 10px auto 25px auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Kleine Ohren für den Bluey-Look */
+        .clock-container::before, .clock-container::after {
+            content: '';
+            position: absolute;
+            top: -12px;
+            width: 40px;
+            height: 40px;
+            background: var(--bluey-blue);
+            border-radius: 10px 30px 0 0;
+            z-index: -1;
+        }
+        .clock-container::before { left: 40px; transform: rotate(-15px); }
+        .clock-container::after { right: 40px; transform: rotate(55deg); border-radius: 30px 10px 0 0; }
+
+        .clock-face {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+
+        .center-nut {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: var(--bingo-orange);
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            border: 2px solid white;
+        }
+
+        /* Zeiger */
+        .hand {
+            position: absolute;
+            bottom: 50%;
+            left: 50%;
+            transform-origin: bottom center;
+            border-radius: 10px;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .hour-hand {
+            width: 8px;
+            height: 60px;
+            background-color: var(--bluey-dark);
+            margin-left: -4px;
+            z-index: 5;
+        }
+
+        .minute-hand {
+            width: 6px;
+            height: 90px;
+            background-color: var(--bingo-orange);
+            margin-left: -3px;
+            z-index: 4;
+        }
+
+        /* Zahlen auf der Uhr */
+        .number {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            text-align: center;
+            line-height: 30px;
+            font-weight: 600;
+            font-size: 1.3rem;
+            color: #333;
+        }
+
+        /* Antworten-Bereich */
+        .answers-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: var(--white);
+            border: none;
+            padding: 15px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border-radius: 18px;
+            cursor: pointer;
+            box-shadow: 0 6px 0px #ccd1d9;
+            transition: all 0.1s ease;
+            color: #444;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Mikro-Animationen bei Klick/Hover */
+        .btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0px #ccd1d9;
+        }
+
+        /* Feedback-Animationen */
+        @keyframes bounce {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.12); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+
+        .correct-animation {
+            animation: bounce 0.5s ease;
+            background-color: var(--correct-green) !important;
+            color: white !important;
+            box-shadow: 0 6px 0px #27ae60 !important;
+        }
+
+        .wrong-animation {
+            animation: shake 0.4s ease;
+            background-color: var(--wrong-red) !important;
+            color: white !important;
+            box-shadow: 0 6px 0px #c0392b !important;
+        }
+
+        /* Leaderboard & Name Input */
+        .leaderboard-box {
+            background: var(--white);
+            border-radius: 20px;
+            padding: 15px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 8px 0px rgba(0,0,0,0.05);
+            border: 3px solid var(--bingo-orange);
+        }
+
+        .leaderboard-box h2 {
+            text-align: center;
+            color: var(--bingo-orange);
+            margin-bottom: 10px;
+            font-size: 1.4rem;
+        }
+
+        .score-list {
+            list-style: none;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 10px;
+            border-bottom: 2px dashed #eee;
+            font-weight: 600;
+        }
+
+        .score-item:last-child { border-bottom: none; }
+
+        .overlay {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            padding: 20px;
+        }
+
+        .modal {
+            background: white;
+            padding: 25px;
+            border-radius: 25px;
+            text-align: center;
+            max-width: 350px;
+            width: 100%;
+            box-shadow: 0 10px 0px var(--bluey-dark);
+            border: 4px solid var(--bluey-blue);
+        }
+
+        .modal h2 { color: var(--bluey-dark); margin-bottom: 10px; }
+
+        .modal input {
+            width: 100%;
+            padding: 10px;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            border: 2px solid var(--bluey-blue);
+            margin-bottom: 15px;
+            text-align: center;
+            font-family: 'Fredoka', sans-serif;
+        }
+
+        .modal .save-btn {
+            background: var(--bingo-orange);
+            color: white;
+            box-shadow: 0 5px 0px #d35400;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🐾 Blueys Uhren-Schule</h1>
+    </header>
+
+    <div class="status-bar style-bar" style="width: 100%; max-width: 400px;">
+        <div class="status-item">Punkte: <span id="score-display">0</span></div>
+        <div class="status-item">Runde: <span id="round-display">1</span>/5</div>
+    </div>
+
+    <div class="difficulty-container">
+        <label for="difficulty">Schwierigkeit:</label>
+        <select id="difficulty" onchange="resetGame()">
+            <option value="1">Volle Stunden</option>
+            <option value="2">Halbe & Volle Stunden</option>
+            <option value="3">Viertelstunden (15er)</option>
+            <option value="4">Alle 5-Minuten-Schritte</option>
+        </select>
+    </div>
+
+    <div class="clock-container" id="clock">
+        <div class="clock-face">
+            <div class="center-nut"></div>
+            <div class="hand hour-hand" id="hour-hand"></div>
+            <div class="hand minute-hand" id="minute-hand"></div>
+            <div id="numbers-container"></div>
+        </div>
+    </div>
+
+    <div class="answers-container" id="answers-box">
+        <button class="btn" onclick="checkAnswer(this)">00:00</button>
+        <button class="btn" onclick="checkAnswer(this)">00:00</button>
+        <button class="btn" onclick="checkAnswer(this)">00:00</button>
+        <button class="btn" onclick="checkAnswer(this)">00:00</button>
+    </div>
+
+    <div class="leaderboard-box">
+        <h2>🏆 Uhren-Könige</h2>
+        <ul class="score-list" id="leaderboard-list">
+            </ul>
+    </div>
+
+    <div class="overlay" id="gameover-modal">
+        <div class="modal">
+            <h2>Wackadoo! 🎉</h2>
+            <p style="margin-bottom: 15px; font-weight: 600;">Du hast <span id="final-score">0</span> Punkte geschafft!</p>
+            <input type="text" id="player-name" placeholder="Dein Name..." maxlength="12">
+            <button class="btn save-btn" onclick="saveHighScore()">In die Bestenliste!</button>
+        </div>
+    </div>
+
+    <script>
+        let currentHour = 12;
+        let currentMinute = 0;
+        let score = 0;
+        let round = 1;
+        const maxRounds = 5;
+        let correctAnswerText = "";
+
+        // Uhrzahlen mathematisch exakt im Kreis platzieren
+        function createClockNumbers() {
+            const container = document.getElementById('numbers-container');
+            const radius = 105; // Abstand vom Zentrum in Pixeln
+            for (let i = 1; i <= 12; i++) {
+                const angle = (i * 30) * (Math.PI / 180);
+                const x = 130 + radius * Math.sin(angle) - 15;
+                const y = 130 - radius * Math.cos(angle) - 15;
+                
+                const numDiv = document.createElement('div');
+                numDiv.className = 'number';
+                numDiv.style.left = `${x}px`;
+                numDiv.style.top = `${y}px`;
+                numDiv.innerText = i;
+                container.appendChild(numDiv);
+            }
+        }
+
+        // Generiert eine Uhrzeit basierend auf der Schwierigkeit (immer in 5er Schritten)
+        function generateTime() {
+            const diff = parseInt(document.getElementById('difficulty').value);
+            currentHour = Math.floor(Math.random() * 12) + 1; // 1 bis 12
+
+            if (diff === 1) {
+                currentMinute = 0;
+            } else if (diff === 2) {
+                currentMinute = Math.random() < 0.5 ? 0 : 30;
+            } else if (diff === 3) {
+                const choices = [0, 15, 30, 45];
+                currentMinute = choices[Math.floor(Math.random() * choices.length)];
+            } else {
+                // Alle 5er-Schritte (0, 5, 10, 15 ... 55)
+                currentMinute = Math.floor(Math.random() * 12) * 5;
+            }
+
+            // Zeiger stellen
+            const minDeg = currentMinute * 6;
+            // Der Stundenzeiger bewegt sich fließend mit den Minuten mit
+            const hourDeg = (currentHour * 30) + (currentMinute * 0.5);
+
+            document.getElementById('minute-hand').style.transform = `rotate(${minDeg}deg)`;
+            document.getElementById('hour-hand').style.transform = `rotate(${hourDeg}deg)`;
+
+            // Richtigen Text formatieren
+            correctAnswerText = formatTime(currentHour, currentMinute);
+            setupAnswers();
+        }
+
+        function formatTime(h, m) {
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')} Uhr`;
+        }
+
+        // Generiert 4 Antwortmöglichkeiten (1 richtige, 3 falsche)
+        function setupAnswers() {
+            const buttons = document.querySelectorAll('#answers-box .btn');
+            let options = [correctAnswerText];
+
+            while(options.length < 4) {
+                let fHour = Math.floor(Math.random() * 12) + 1;
+                let fMinute = Math.floor(Math.random() * 12) * 5; // Immer in 5er-Schritten
+                let fTimeText = formatTime(fHour, fMinute);
+
+                if(!options.includes(fTimeText)) {
+                    options.push(fTimeText);
+                }
+            }
+
+            // Optionen mischen (Misch-Algorithmus)
+            options.sort(() => Math.random() - 0.5);
+
+            buttons.forEach((btn, index) => {
+                btn.innerText = options[index];
+                btn.className = "btn"; // Reset Animations-Klassen
+                btn.disabled = false;
+            });
+        }
+
+        // Antwort prüfen mit Animationen
+        function checkAnswer(selectedButton) {
+            const buttons = document.querySelectorAll('#answers-box .btn');
+            // Deaktiviert alle Buttons sofort, damit man nicht mehrfach klickt
+            buttons.forEach(b => b.disabled = true);
+
+            if (selectedButton.innerText === correctAnswerText) {
+                selectedButton.classList.add('correct-animation');
+                score += 10;
+                document.getElementById('score-display').innerText = score;
+            } else {
+                selectedButton.classList.add('wrong-animation');
+                // Richtigen Button grün aufleuchten lassen zur Hilfe
+                buttons.forEach(b => {
+                    if(b.innerText === correctAnswerText) b.classList.add('correct-animation');
+                });
+            }
+
+            // Nächste Runde nach kurzer Animationspause
+            setTimeout(() => {
+                if (round < maxRounds) {
+                    round++;
+                    document.getElementById('round-display').innerText = round;
+                    generateTime();
+                } else {
+                    endGame();
+                }
+            }, 1500);
+        }
+
+        function endGame() {
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('gameover-modal').style.display = 'flex';
+        }
+
+        function saveHighScore() {
+            let name = document.getElementById('player-name').value.trim();
+            if(name === "") name = "Unbekannter Welpe";
+
+            let leaderboards = JSON.parse(localStorage.getItem('clockLeaderboard')) || [];
+            leaderboards.push({name: name, score: score});
+            
+            // Sortieren nach Highscore (höchste zuerst)
+            leaderboards.sort((a,b) => b.score - a.score);
+            // Nur Top 5 behalten
+            leaderboards = leaderboards.slice(0, 5);
+
+            localStorage.setItem('clockLeaderboard', JSON.stringify(leaderboards));
+            
+            document.getElementById('gameover-modal').style.display = 'none';
+            document.getElementById('player-name').value = "";
+            resetGame();
+        }
+
+        function loadLeaderboard() {
+            const list = document.getElementById('leaderboard-list');
+            list.innerHTML = "";
+            let leaderboards = JSON.parse(localStorage.getItem('clockLeaderboard')) || [];
+
+            if(leaderboards.length === 0) {
+                list.innerHTML = "<li class='score-item' style='color:#888;'>Noch keine Einträge. Spiel eine Runde!</li>";
+                return;
+            }
+
+            leaderboards.forEach((entry, idx) => {
+                let medal = idx === 0 ? "🥇 " : idx === 1 ? "🥈 " : idx === 2 ? "🥉 " : "";
+                list.innerHTML += `<li class="score-item"><span>${medal}${entry.name}</span><span>${entry.score} Pkt.</span></li>`;
+            });
+        }
+
+        function resetGame() {
+            score = 0;
+            round = 1;
+            document.getElementById('score-display').innerText = score;
+            document.getElementById('round-display').innerText = round;
+            loadLeaderboard();
+            generateTime();
+        }
+
+        // Start der App
+        createClockNumbers();
+        resetGame();
+    </script>
+</body>
+</html>
+
